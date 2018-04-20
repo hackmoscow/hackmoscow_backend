@@ -1,0 +1,4 @@
+celery
+flask
+psycopg2
+sqlalchemy
