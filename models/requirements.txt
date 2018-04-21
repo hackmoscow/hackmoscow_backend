@@ -2,3 +2,4 @@ celery
 flask
 psycopg2
 sqlalchemy
+geoalchemy2

@@ -6,7 +6,7 @@ install_reqs = parse_requirements(path.join(path.dirname(__file__), 'requirement
 reqs = [str(ir.req) for ir in install_reqs]
 
 setup(
-    name='billing_api',
+    name='zabor_api',
     version='0.0.1',
     entry_points={
         'console_scripts': [
