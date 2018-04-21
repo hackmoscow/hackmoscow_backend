@@ -36,7 +36,15 @@ class CountSerializationField(fields.Number):
         return len(value) if value else 0
 
 
+class UsernameSerializationField(fields.String):
+    def _serialize(self, value, attr, obj):
+        if value:
+            return value.name
+
+
 class MessageSchema(ModelSchema):
+    user = UsernameSerializationField(attribute='user', dump_only=True)
+
     class Meta:
         fields = ("user", "text", "created_at")
         model = Message
