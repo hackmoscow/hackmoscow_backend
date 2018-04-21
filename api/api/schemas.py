@@ -1,10 +1,11 @@
-from models import Thread
+from models import Thread, Message
 from marshmallow_sqlalchemy import ModelSchema, ModelConverter
 from marshmallow import post_load, fields
 from utils import geo
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
+
 
 class GeoConverter(ModelConverter):
     SQLA_TYPE_MAPPING = ModelConverter.SQLA_TYPE_MAPPING.copy()
@@ -45,8 +46,16 @@ class ThreadSchema(ModelSchema):
     location = GeographySerializationField(attribute='location')
 
     class Meta:
+        fields = ("id", "name", "location")
         model = Thread
         model_converter = GeoConverter
 
 
+class MessageSchema(ModelSchema):
+    class Meta:
+        fields = ("text",)
+        model = Message
+
+
 thread_schema = ThreadSchema()
+message_schema = MessageSchema()
