@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, func
+import datetime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 from geoalchemy2 import Geometry
 from sqlalchemy.orm import relationship, backref
 from utils import geo
@@ -11,6 +12,7 @@ class Thread(Base):
     name = Column(String())
     location = Column(Geometry('POINT')) # lat lon
     messages = relationship('Message', backref=backref("thead_messages"))
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     @classmethod
     def get_near_location(cls, session, lat, lon, max_distance):
@@ -20,7 +22,7 @@ class Thread(Base):
 
 class Message(Base):
     __tablename__ = 'messages'
-
     id = Column(Integer, primary_key=True)
     text = Column(Text)
     thread_id = Column(Integer, ForeignKey("threads.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
