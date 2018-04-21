@@ -46,14 +46,14 @@ class ThreadSchema(ModelSchema):
     location = GeographySerializationField(attribute='location')
 
     class Meta:
-        fields = ("id", "name", "location")
+        fields = ("id", "name", "location", "created_at")
         model = Thread
         model_converter = GeoConverter
 
 
 class MessageSchema(ModelSchema):
     class Meta:
-        fields = ("text",)
+        fields = ("text", "created_at")
         model = Message
 
 
