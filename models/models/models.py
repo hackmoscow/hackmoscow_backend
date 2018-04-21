@@ -11,7 +11,7 @@ class Thread(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String())
     location = Column(Geometry('POINT')) # lat lon
-    messages = relationship('Message', backref=backref("thead_messages"))
+    messages = relationship('Message', backref=backref("thread_messages"), order_by="Message.created_at")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     @classmethod

@@ -2,7 +2,7 @@ import json
 import os
 from flask import Flask, request, abort, Response, g, url_for, current_app
 from flask.views import MethodView
-from models import Thread
+from models import Thread, Message
 from utils.db import close_db_session_on_flask_shutdown
 from .schemas import thread_schema, message_schema
 from flask import jsonify
