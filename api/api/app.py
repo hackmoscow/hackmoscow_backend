@@ -31,6 +31,7 @@ def is_valid_location(text):
 def create_app(db_session_factory):
     app = Flask(__name__)
     app.secret_key = os.environ['API_SECRET_KEY']
+    app.config['SECRET_KEY'] = os.environ['API_SECRET_KEY']
     app.db_session = db_session_factory
 
     app.cors = CORS(app, resources={r"*": {"origins": "*"}})
@@ -44,7 +45,7 @@ def create_app(db_session_factory):
         session = current_app.db_session()
         return session.query(User).filter(User.id == user_id).first()
 
-    app.config['THREAD_DISTANCE'] = os.environ.get("THREAD_DISTANCE", 100)  # meters
+    app.config['THREAD_DISTANCE'] = os.environ.get("THREAD_DISTANCE", 1)  # meters
 
     @app.teardown_appcontext
     def close_db_session(error):
@@ -73,8 +74,9 @@ def create_app(db_session_factory):
             thread = thread_schema.load(data, session=session).data
             session.add(thread)
             session.commit()
+            data = thread_schema.dump(thread).data
             return Response(
-                response=json.dumps({'thread_id': thread.id}),
+                response=json.dumps(data),
                 status=201,
                 mimetype='application/json'
             )
@@ -91,6 +93,7 @@ def create_app(db_session_factory):
                 mimetype='application/json'
             )
 
+        @login_required
         def post(self, thread_id):
             session = current_app.db_session()
             thread = session.query(Thread).filter(Thread.id == thread_id).first()
@@ -100,7 +103,7 @@ def create_app(db_session_factory):
             if not data or not is_valid_location(data.get('location')):
                 abort(400)
 
-            # TODO CHECK USER IS WITHIN DISTANCE TO POST TO THREAD
+            data['user_id'] = current_user.id
             message = message_schema.load(data, session=session).data
             thread.messages.append(message)
             session.add(message)
@@ -123,7 +126,13 @@ def create_app(db_session_factory):
                 next_url = request.args.get('next')
                 if next_url and not is_safe_url(next):
                     return abort(400)
-                return redirect(next_url or url_for('index'))
+                if next_url:
+                    return redirect(next_url or url_for('index'))
+                return Response(
+                    response=json.dumps({'name': user.name}),
+                    status=201,
+                    mimetype='application/json'
+                )
             else:
                 return abort(401)
 
@@ -196,7 +205,7 @@ def create_app(db_session_factory):
         session.commit()
         login_user(new_user, remember=True)
         return Response(
-            response=json.dumps({'login_url': url_for('auth'), 'password': new_user.password}),
+            response=json.dumps({'name': new_user.name}),
             status=201,
             mimetype='application/json'
         )

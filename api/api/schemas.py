@@ -38,7 +38,7 @@ class CountSerializationField(fields.Number):
 
 class MessageSchema(ModelSchema):
     class Meta:
-        fields = ("author", "text", "created_at")
+        fields = ("user", "text", "created_at")
         model = Message
 
 

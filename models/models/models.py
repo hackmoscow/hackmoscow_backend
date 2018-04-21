@@ -64,7 +64,9 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
     text = Column(Text)
     thread_id = Column(Integer, ForeignKey("threads.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    user = relationship("User")
 
 
 class Like(Base):
