@@ -46,11 +46,13 @@ class ThreadSchema(ModelSchema):
     location = GeographySerializationField(attribute='location')
     likes = CountSerializationField(attribute='likes', dump_only=True)
     dislikes = CountSerializationField(attribute='dislikes', dump_only=True)
+    messages_amount = CountSerializationField(attribute='messages', dump_only=True)
 
     class Meta:
-        fields = ("id", "name", "location", "created_at", "likes", "dislikes")
+        fields = ("id", "name", "location", "created_at", "likes", "dislikes", "messages_amount")
         model = Thread
         model_converter = GeoConverter
+        dateformat = '%Y-%m-%d %H:%M'
 
 
 class UserSchema(ModelSchema):
