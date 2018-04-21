@@ -5,8 +5,9 @@ from flask.views import MethodView
 from models import Thread, Message, User
 from utils.db import close_db_session_on_flask_shutdown
 from flask_login import LoginManager, login_user, login_required, current_user
-from .schemas import thread_schema, message_schema
+from .schemas import thread_schema, message_schema, user_schema
 from urllib.parse import urlparse, urljoin
+from flask_cors import CORS
 
 
 def is_safe_url(target):
@@ -32,8 +33,10 @@ def create_app(db_session_factory):
     app.secret_key = os.environ['API_SECRET_KEY']
     app.db_session = db_session_factory
 
+    app.cors = CORS(app, resources={r"*": {"origins": "*"}})
+
     login_manager = LoginManager()
-    #login_manager.login_view = "auth"
+    # login_manager.login_view = "auth"
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -47,7 +50,7 @@ def create_app(db_session_factory):
     def close_db_session(error):
         return close_db_session_on_flask_shutdown(app, g, error)
 
-    class ThreadAPI(MethodView):
+    class ThreadsAPI(MethodView):
         def get(self):
             location = request.args.get('location')  # lat,lon
             if not is_valid_location(location):
@@ -76,20 +79,23 @@ def create_app(db_session_factory):
                 mimetype='application/json'
             )
 
-    class MessagesAPI(MethodView):
+    class ThreadMessagesAPI(MethodView):
         def get(self, thread_id):
             session = current_app.db_session()
             thread = session.query(Thread).filter(Thread.id == thread_id).one()
+            schema_dump = thread_schema.dump(thread).data
             messages = thread.messages
-            data = message_schema.dump(messages, many=True).data
+            schema_dump['messages'] = message_schema.dump(messages, many=True).data
             return Response(
-                response=json.dumps(data),
+                response=json.dumps(schema_dump),
                 mimetype='application/json'
             )
 
         def post(self, thread_id):
             session = current_app.db_session()
-            thread = session.query(Thread).filter(Thread.id == thread_id).one()
+            thread = session.query(Thread).filter(Thread.id == thread_id).first()
+            if not thread:
+                abort(404)
             data = request.json
             if not data or not is_valid_location(data.get('location')):
                 abort(400)
@@ -111,7 +117,7 @@ def create_app(db_session_factory):
             data = request.json
             session = current_app.db_session()
             password = data.get('password', None)
-            user = session.query(User).filter(User.password == password).one()
+            user = session.query(User).filter(User.password == password).first()
             if user:
                 login_user(user, remember=True)
                 next_url = request.args.get('next')
@@ -121,8 +127,54 @@ def create_app(db_session_factory):
             else:
                 return abort(401)
 
-    app.add_url_rule('/thread', view_func=ThreadAPI.as_view('thread'))
-    app.add_url_rule('/thread/<thread_id>', view_func=MessagesAPI.as_view('thread_messages'))
+    class LikeAPI(MethodView):
+        @login_required
+        def post(self, thread_id):
+            data = request.json
+            session = current_app.db_session()
+            thread = session.query(Thread).filter(Thread.id == thread_id).first()
+            if not thread:
+                abort(404)
+            like = thread.like(session, current_user)
+            if like:
+                return Response(
+                    response=json.dumps({"status": "liked"}),
+                    status=201,
+                    mimetype='application/json'
+                )
+            else:
+                return Response(
+                    response=json.dumps({"status": "unliked"}),
+                    status=200,
+                    mimetype='application/json'
+                )
+
+    class DislikeAPI(MethodView):
+        @login_required
+        def post(self, thread_id):
+            data = request.json
+            session = current_app.db_session()
+            thread = session.query(Thread).filter(Thread.id == thread_id).first()
+            if not thread:
+                abort(404)
+            like = thread.dislike(session, current_user)
+            if like:
+                return Response(
+                    response=json.dumps({"status": "disliked"}),
+                    status=201,
+                    mimetype='application/json'
+                )
+            else:
+                return Response(
+                    response=json.dumps({"status": "undisliked"}),
+                    status=200,
+                    mimetype='application/json'
+                )
+
+    app.add_url_rule('/thread', view_func=ThreadsAPI.as_view('thread'))
+    app.add_url_rule('/thread/<thread_id>', view_func=ThreadMessagesAPI.as_view('thread_messages'))
+    app.add_url_rule('/thread/<thread_id>/like', view_func=LikeAPI.as_view('thread_likes'))
+    app.add_url_rule('/thread/<thread_id>/dislike', view_func=DislikeAPI.as_view('thread_dislikes'))
     app.add_url_rule('/auth', view_func=AuthAPI.as_view('auth'))
 
     @app.route('/register', methods=['POST'])
@@ -152,7 +204,7 @@ def create_app(db_session_factory):
     @app.route("/whoami")
     @login_required
     def whoami():
-        return Response(response=json.dumps({'password': current_user.password}))
+        return Response(response=json.dumps(user_schema.dump(current_user).data))
 
     @app.route('/')
     def index():

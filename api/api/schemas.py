@@ -1,4 +1,4 @@
-from models import Thread, Message
+from models import Thread, Message, User
 from marshmallow_sqlalchemy import ModelSchema, ModelConverter
 from marshmallow import post_load, fields
 from utils import geo
@@ -22,17 +22,6 @@ class GeographySerializationField(fields.String):
         return shply_geom.to_wkt()
 
     def _deserialize(self, value, attr, data):
-        """Deserialize value. Concrete :class:`Field` classes should implement this method.
-
-        :param value: The value to be deserialized.
-        :param str attr: The attribute/key in `data` to be deserialized.
-        :param dict data: The raw input data passed to the `Schema.load`.
-        :raise ValidationError: In case of formatting or validation failure.
-        :return: The deserialized value.
-
-        .. versionchanged:: 2.0.0
-            Added ``attr`` and ``data`` parameters.
-        """
         if value is None:
             return value
 
@@ -42,20 +31,34 @@ class GeographySerializationField(fields.String):
         return WKTElement(value)
 
 
-class ThreadSchema(ModelSchema):
-    location = GeographySerializationField(attribute='location')
-
-    class Meta:
-        fields = ("id", "name", "location", "created_at")
-        model = Thread
-        model_converter = GeoConverter
+class CountSerializationField(fields.Number):
+    def _serialize(self, value, attr, obj):
+        return len(value) if value else 0
 
 
 class MessageSchema(ModelSchema):
     class Meta:
-        fields = ("text", "created_at")
+        fields = ("author", "text", "created_at")
         model = Message
+
+
+class ThreadSchema(ModelSchema):
+    location = GeographySerializationField(attribute='location')
+    likes = CountSerializationField(attribute='likes', dump_only=True)
+    dislikes = CountSerializationField(attribute='dislikes', dump_only=True)
+
+    class Meta:
+        fields = ("id", "name", "location", "created_at", "likes", "dislikes")
+        model = Thread
+        model_converter = GeoConverter
+
+
+class UserSchema(ModelSchema):
+    class Meta:
+        fields = ('name',)
+        model = User
 
 
 thread_schema = ThreadSchema()
 message_schema = MessageSchema()
+user_schema = UserSchema()
