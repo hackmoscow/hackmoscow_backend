@@ -1,6 +1,7 @@
 FROM python:3.6-alpine
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
-
+RUN echo "http://mirror.leaseweb.com/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk update && apk add geos
 COPY requirements.txt /src/requirements.txt
 RUN pip install -U --user -r /src/requirements.txt
 
@@ -14,4 +15,4 @@ RUN python /src/setup.py develop
 
 EXPOSE 8000
 
-CMD ["run_billing_api"]
+CMD ["run_zabor_api"]

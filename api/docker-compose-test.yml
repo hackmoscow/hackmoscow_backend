@@ -10,7 +10,7 @@ services:
       - test.env
   test_api:
     build: .
-    image: billing:latest
+    image: zabor:latest
     command: python3 setup.py test
     working_dir: /src
     ports:
@@ -28,7 +28,7 @@ services:
       - test.env
   test_api_celery_worker:
     build: .
-    image: billing:latest
+    image: zabor:latest
     command: celery -A api.tasks:celery_app worker --loglevel=info
     links:
       - test_rabbitmq

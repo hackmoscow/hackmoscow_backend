@@ -9,7 +9,7 @@ tests_require = [
     'pytest'
 ]
 setup(
-    name='billing_api',
+    name='zabor_api',
     version='0.0.1',
     entry_points={
         'console_scripts': [

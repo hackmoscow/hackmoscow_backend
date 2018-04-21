@@ -9,11 +9,11 @@ tests_require = [
     'pytest'
 ]
 setup(
-    name='billing_api',
+    name='zabot_api',
     version='0.0.1',
     entry_points={
         'console_scripts': [
-            'run_billing_api = api.__main__:main',
+            'run_zabor_api = api.__main__:main',
         ]
     },
     install_requires=reqs,
