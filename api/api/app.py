@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, request, abort, Response, g, url_for, current_app, redirect, render_template
+from flask import Flask, request, abort, Response, g, url_for, current_app, redirect, render_template, send_from_directory
 from flask.views import MethodView
 from models import Thread, Message, User
 from utils.db import close_db_session_on_flask_shutdown
@@ -29,7 +29,7 @@ def is_valid_location(text):
 
 
 def create_app(db_session_factory):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path='')
     app.secret_key = os.environ['API_SECRET_KEY']
     app.config['SECRET_KEY'] = os.environ['API_SECRET_KEY']
     app.db_session = db_session_factory
@@ -215,8 +215,9 @@ def create_app(db_session_factory):
     def whoami():
         return Response(response=json.dumps(user_schema.dump(current_user).data))
 
-    @app.route('/')
-    def index():
-        return render_template('index.html')
+    # This crap is the only reason why frontend works, at all
+    @app.route('/static/<path:path>')
+    def serve_static(path):
+        return send_from_directory('front', path)
 
     return app

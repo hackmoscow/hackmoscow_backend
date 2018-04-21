@@ -1,0 +1,3 @@
+[submodule "api/api/front"]
+	path = api/api/front
+	url = https://github.com/hackmoscow/zabor_front.git
