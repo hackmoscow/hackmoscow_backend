@@ -1,15 +1,17 @@
 from os import path
-from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
-install_reqs = parse_requirements(path.join(path.dirname(__file__), 'requirements.txt'), session='')
-reqs = [str(ir.req) for ir in install_reqs]
+def parse_requirements(filename):
+    """ load requirements from a pip requirements file """
+    lineiter = (line.strip() for line in open(filename))
+    return [line for line in lineiter if line and not line.startswith("#")]
 
-tests_require = [
-    'pytest'
-]
+install_reqs = parse_requirements(path.join(path.dirname(__file__), 'requirements.txt'))
+reqs = [str(ir) for ir in install_reqs]
+
+tests_require = [ ]
 setup(
-    name='zabot_api',
+    name='zabor_api',
     version='0.0.1',
     entry_points={
         'console_scripts': [
@@ -17,9 +19,7 @@ setup(
         ]
     },
     install_requires=reqs,
-    setup_requires=[
-        'pytest-runner',
-    ],
+    setup_requires=[ ],
     tests_require=tests_require,
     packages=find_packages(),
     long_description=__doc__,

@@ -2,6 +2,7 @@ import datetime
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, func
 from geoalchemy2 import Geometry
 from sqlalchemy.orm import relationship, backref
+from flask_login import UserMixin
 from utils import geo
 from .base import Base
 
@@ -26,3 +27,11 @@ class Message(Base):
     text = Column(Text)
     thread_id = Column(Integer, ForeignKey("threads.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class User(UserMixin, Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    password = Column(String, unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.password

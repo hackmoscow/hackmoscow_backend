@@ -4,3 +4,4 @@ sqlalchemy
 geoalchemy2
 marshmallow-sqlalchemy
 shapely
+flask-login
