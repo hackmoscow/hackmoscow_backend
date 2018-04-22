@@ -134,6 +134,8 @@ def create_app(db_session_factory):
             if not password:
                 abort(400)
             user = session.query(User).filter(User.password == password).first()
+            if not user:
+                abort(401)
             return Response(
                 response=json.dumps({'name': user.name}),
                 status=201,
