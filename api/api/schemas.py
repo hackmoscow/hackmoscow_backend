@@ -41,14 +41,13 @@ class UsernameSerializationField(fields.String):
         if value:
             return value.name
 
-
 class MessageSchema(ModelSchema):
     user = UsernameSerializationField(attribute='user', dump_only=True)
 
     class Meta:
         fields = ("user", "text", "created_at")
         model = Message
-
+        dateformat = '%Y-%m-%d %H:%M'
 
 class ThreadSchema(ModelSchema):
     location = GeographySerializationField(attribute='location')
