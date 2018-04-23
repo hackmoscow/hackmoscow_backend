@@ -1,4 +1,6 @@
 # Zabbor
 ## Made at HackMoscow 2018
 Location bounded anonymous chat
-![zabbor login](https://www.dropbox.com/s/y97o31xkwqklh7a/zabbor.net.PNG?dl=0)
+![zabbor login](https://ibb.co/irvdYc"><img src="https://preview.ibb.co/d5Q1mx/Zabbor_login.png)
+
+![zabbor](https://ibb.co/iZATYc"><img src="https://preview.ibb.co/cPoFDc/zabbor_net.png)
